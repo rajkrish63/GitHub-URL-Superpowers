@@ -1,0 +1,549 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>GitHub URL Tricks</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=JetBrains+Mono:wght@400;500;700&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet"/>
+<style>
+  :root {
+    --bg: #07090d;
+    --surface: #0d1117;
+    --border: rgba(255,255,255,0.07);
+    --text: #e8eaf0;
+    --muted: rgba(232,234,240,0.45);
+    --c1: #3dffa0;
+    --c2: #ff6b6b;
+    --c3: #ffd166;
+    --c4: #74b9ff;
+    --c5: #a29bfe;
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Syne', sans-serif;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* Ambient blobs */
+  .bg-blob {
+    position: fixed; border-radius: 50%;
+    filter: blur(120px); pointer-events: none; z-index: 0;
+  }
+  .blob1 { width: 500px; height: 500px; top: -100px; left: -100px; background: rgba(61,255,160,0.04); }
+  .blob2 { width: 400px; height: 400px; bottom: 0; right: -100px; background: rgba(116,185,255,0.05); }
+  .blob3 { width: 300px; height: 300px; top: 40%; left: 40%; background: rgba(255,209,102,0.03); }
+
+  .wrapper {
+    position: relative; z-index: 1;
+    max-width: 780px; margin: 0 auto;
+    padding: 48px 20px 80px;
+  }
+
+  /* Header */
+  .header { text-align: center; margin-bottom: 52px; }
+  .badge {
+    display: inline-flex; align-items: center; gap: 6px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px; letter-spacing: 0.18em; text-transform: uppercase;
+    color: var(--muted); border: 1px solid var(--border);
+    padding: 5px 14px; border-radius: 20px;
+    background: rgba(255,255,255,0.02);
+    margin-bottom: 22px;
+  }
+  .badge::before { content: '◆'; color: var(--c1); font-size: 8px; }
+  h1 {
+    font-family: 'Instrument Serif', serif;
+    font-size: clamp(38px, 7vw, 64px);
+    line-height: 1.05; letter-spacing: -0.02em;
+    color: #fff; margin-bottom: 14px;
+  }
+  h1 em { color: var(--muted); font-style: italic; }
+  .subtitle {
+    font-size: 14px; color: var(--muted); line-height: 1.75;
+    max-width: 420px; margin: 0 auto;
+  }
+
+  /* Input zone */
+  .input-zone {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 18px;
+    padding: 28px 28px 24px;
+    margin-bottom: 28px;
+    transition: border-color 0.3s;
+    position: relative;
+  }
+  .input-zone:focus-within {
+    border-color: rgba(61,255,160,0.35);
+    box-shadow: 0 0 0 1px rgba(61,255,160,0.12), 0 8px 40px rgba(0,0,0,0.3);
+  }
+  .input-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px; letter-spacing: 0.15em; text-transform: uppercase;
+    color: var(--muted); margin-bottom: 12px; display: block;
+  }
+  .input-row {
+    display: flex; gap: 10px; align-items: center;
+  }
+  .url-input {
+    flex: 1;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 13px 16px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px; color: var(--text);
+    outline: none; transition: border-color 0.2s, background 0.2s;
+  }
+  .url-input::placeholder { color: rgba(255,255,255,0.2); }
+  .url-input:focus {
+    border-color: rgba(61,255,160,0.4);
+    background: rgba(61,255,160,0.03);
+  }
+  .clear-btn {
+    background: rgba(255,255,255,0.05);
+    border: 1px solid var(--border); border-radius: 8px;
+    color: var(--muted); padding: 13px 16px; cursor: pointer;
+    font-size: 14px; transition: all 0.2s; white-space: nowrap;
+    font-family: 'Syne', sans-serif;
+  }
+  .clear-btn:hover { background: rgba(255,107,107,0.1); border-color: rgba(255,107,107,0.3); color: var(--c2); }
+
+  .input-hint {
+    margin-top: 10px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px; color: var(--muted);
+  }
+  .input-hint span { color: var(--c1); }
+
+  /* Error */
+  .error-msg {
+    display: none;
+    background: rgba(255,107,107,0.08);
+    border: 1px solid rgba(255,107,107,0.25);
+    border-radius: 10px; padding: 12px 16px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px; color: var(--c2);
+    margin-top: 10px;
+  }
+  .error-msg.show { display: block; }
+
+  /* Tricks grid */
+  .tricks-grid {
+    display: grid; gap: 14px;
+  }
+
+  .trick-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 22px 24px;
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    align-items: center;
+    gap: 18px;
+    transition: all 0.3s cubic-bezier(0.23,1,0.32,1);
+    position: relative; overflow: hidden;
+    text-decoration: none;
+    cursor: pointer;
+  }
+  .trick-card::before {
+    content: ''; position: absolute;
+    top: 0; left: 0; right: 0; height: 1px;
+    opacity: 0; transition: opacity 0.3s;
+  }
+  .trick-card:hover { transform: translateY(-2px); }
+  .trick-card.disabled {
+    opacity: 0.4; pointer-events: none; cursor: default;
+  }
+  .trick-card.active { opacity: 1; }
+
+  /* Per-card colors */
+  .card-1 { --cc: var(--c1); }
+  .card-2 { --cc: var(--c2); }
+  .card-3 { --cc: var(--c3); }
+  .card-4 { --cc: var(--c4); }
+
+  .trick-card:hover {
+    border-color: color-mix(in srgb, var(--cc) 35%, transparent);
+    box-shadow: 0 0 32px color-mix(in srgb, var(--cc) 12%, transparent);
+    background: color-mix(in srgb, var(--cc) 4%, var(--surface));
+  }
+  .trick-card::before {
+    background: linear-gradient(90deg, transparent, var(--cc), transparent);
+  }
+  .trick-card:hover::before { opacity: 1; }
+
+  .card-icon {
+    width: 48px; height: 48px;
+    border-radius: 12px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 22px;
+    background: color-mix(in srgb, var(--cc) 12%, transparent);
+    border: 1px solid color-mix(in srgb, var(--cc) 20%, transparent);
+    flex-shrink: 0;
+  }
+
+  .card-body { min-width: 0; }
+  .card-num {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase;
+    color: var(--cc); margin-bottom: 3px;
+  }
+  .card-title {
+    font-size: 16px; font-weight: 700; color: #fff;
+    margin-bottom: 5px; line-height: 1.2;
+  }
+  .card-desc {
+    font-size: 12.5px; color: var(--muted); line-height: 1.55;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+
+  /* URL pill shown when active */
+  .card-url-pill {
+    display: none;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11.5px; color: var(--cc);
+    background: color-mix(in srgb, var(--cc) 10%, transparent);
+    border: 1px solid color-mix(in srgb, var(--cc) 25%, transparent);
+    border-radius: 8px; padding: 6px 12px;
+    margin-top: 8px; word-break: break-all;
+    grid-column: 1 / -1;
+  }
+  .card-url-pill.visible { display: block; }
+
+  .card-action {
+    flex-shrink: 0; display: flex; flex-direction: column; align-items: flex-end; gap: 8px;
+  }
+  .open-btn {
+    display: inline-flex; align-items: center; gap: 6px;
+    background: color-mix(in srgb, var(--cc) 15%, transparent);
+    border: 1px solid color-mix(in srgb, var(--cc) 30%, transparent);
+    color: var(--cc); border-radius: 8px; padding: 9px 16px;
+    font-family: 'Syne', sans-serif; font-size: 12px; font-weight: 600;
+    cursor: pointer; text-decoration: none; white-space: nowrap;
+    transition: all 0.2s;
+  }
+  .open-btn:hover {
+    background: color-mix(in srgb, var(--cc) 25%, transparent);
+    transform: scale(1.03);
+  }
+  .open-btn svg { width: 13px; height: 13px; }
+  .open-btn.locked {
+    background: rgba(255,255,255,0.04);
+    border-color: var(--border);
+    color: rgba(255,255,255,0.2);
+    cursor: default;
+  }
+  .open-btn.locked:hover { transform: none; background: rgba(255,255,255,0.04); }
+
+  /* Copy button */
+  .copy-btn {
+    display: inline-flex; align-items: center; gap: 5px;
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--muted); border-radius: 7px; padding: 6px 12px;
+    font-family: 'JetBrains Mono', monospace; font-size: 10px;
+    cursor: pointer; white-space: nowrap; transition: all 0.2s;
+  }
+  .copy-btn:hover { border-color: var(--cc); color: var(--cc); }
+  .copy-btn.copied { color: var(--c1); border-color: rgba(61,255,160,0.4); }
+
+  /* Footer */
+  .footer {
+    margin-top: 52px; padding-top: 28px;
+    border-top: 1px solid var(--border);
+    display: flex; justify-content: space-between; align-items: center;
+    flex-wrap: wrap; gap: 14px;
+  }
+  .footer-quote {
+    font-family: 'Instrument Serif', serif;
+    font-size: 15px; color: rgba(255,255,255,0.25);
+    font-style: italic;
+  }
+  .footer-credit {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px; letter-spacing: 0.12em;
+    color: rgba(255,255,255,0.2);
+  }
+
+  /* Animations */
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .header { animation: fadeUp 0.6s ease both; }
+  .input-zone { animation: fadeUp 0.6s 0.1s ease both; }
+  .trick-card:nth-child(1) { animation: fadeUp 0.5s 0.15s ease both; }
+  .trick-card:nth-child(2) { animation: fadeUp 0.5s 0.22s ease both; }
+  .trick-card:nth-child(3) { animation: fadeUp 0.5s 0.29s ease both; }
+  .trick-card:nth-child(4) { animation: fadeUp 0.5s 0.36s ease both; }
+
+  @media (max-width: 520px) {
+    .trick-card { grid-template-columns: auto 1fr; }
+    .card-action { flex-direction: row; grid-column: 1 / -1; justify-content: flex-end; }
+    .card-desc { white-space: normal; }
+  }
+</style>
+</head>
+<body>
+
+<div class="bg-blob blob1"></div>
+<div class="bg-blob blob2"></div>
+<div class="bg-blob blob3"></div>
+
+<div class="wrapper">
+
+  <!-- Header -->
+  <div class="header">
+    <div class="badge">by mike.devlogs · GitHub Secret Tricks</div>
+    <h1>GitHub URL<br/><em>Superpowers</em></h1>
+    <p class="subtitle">Paste any GitHub repo URL below — instantly get 4 powerful transformed links, ready to open.</p>
+  </div>
+
+  <!-- Input Zone -->
+  <div class="input-zone">
+    <label class="input-label" for="urlInput">⌨ Paste GitHub Repository URL</label>
+    <div class="input-row">
+      <input
+        type="text"
+        id="urlInput"
+        class="url-input"
+        placeholder="https://github.com/username/repository"
+        autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"
+      />
+      <button class="clear-btn" onclick="clearInput()">✕ Clear</button>
+    </div>
+    <p class="input-hint" id="inputHint">Enter a URL above — all 4 trick links will <span>activate instantly</span></p>
+    <div class="error-msg" id="errorMsg">⚠ Please enter a valid GitHub URL (e.g. https://github.com/owner/repo)</div>
+  </div>
+
+  <!-- Tricks Grid -->
+  <div class="tricks-grid" id="tricksGrid">
+
+    <!-- Card 1: github.dev -->
+    <div class="trick-card card-1 disabled" id="card-1" onclick="openTrick(1)">
+      <div class="card-icon">⌨️</div>
+      <div class="card-body">
+        <div class="card-num">① github.dev</div>
+        <div class="card-title">VS Code in the Browser</div>
+        <div class="card-desc">Opens a full VS Code editor — browse, search & edit without cloning</div>
+        <div class="card-url-pill" id="pill-1"></div>
+      </div>
+      <div class="card-action">
+        <a class="open-btn locked" id="btn-1" href="#" target="_blank" rel="noopener" onclick="return handleOpen(event,1)">
+          Open
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+        </a>
+        <button class="copy-btn" id="copy-1" onclick="copyUrl(event,1)">⎘ Copy</button>
+      </div>
+    </div>
+
+    <!-- Card 2: gitmcp.io -->
+    <div class="trick-card card-2 disabled" id="card-2" onclick="openTrick(2)">
+      <div class="card-icon">🤖</div>
+      <div class="card-body">
+        <div class="card-num">② gitmcp.io</div>
+        <div class="card-title">AI Understands the Repo</div>
+        <div class="card-desc">Prepares the full repo structure for AI analysis — explain, refactor, explore</div>
+        <div class="card-url-pill" id="pill-2"></div>
+      </div>
+      <div class="card-action">
+        <a class="open-btn locked" id="btn-2" href="#" target="_blank" rel="noopener" onclick="return handleOpen(event,2)">
+          Open
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+        </a>
+        <button class="copy-btn" id="copy-2" onclick="copyUrl(event,2)">⎘ Copy</button>
+      </div>
+    </div>
+
+    <!-- Card 3: gitingest -->
+    <div class="trick-card card-3 disabled" id="card-3" onclick="openTrick(3)">
+      <div class="card-icon">📦</div>
+      <div class="card-body">
+        <div class="card-num">③ gitingest.com</div>
+        <div class="card-title">AI-Friendly Full Context</div>
+        <div class="card-desc">Converts the entire repo into structured AI context — no manual file selection</div>
+        <div class="card-url-pill" id="pill-3"></div>
+      </div>
+      <div class="card-action">
+        <a class="open-btn locked" id="btn-3" href="#" target="_blank" rel="noopener" onclick="return handleOpen(event,3)">
+          Open
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+        </a>
+        <button class="copy-btn" id="copy-3" onclick="copyUrl(event,3)">⎘ Copy</button>
+      </div>
+    </div>
+
+    <!-- Card 4: gitdiagram -->
+    <div class="trick-card card-4 disabled" id="card-4" onclick="openTrick(4)">
+      <div class="card-icon">🗺️</div>
+      <div class="card-body">
+        <div class="card-num">④ gitdiagram.com</div>
+        <div class="card-title">Architecture Diagram</div>
+        <div class="card-desc">Auto-generates a visual architecture diagram — folder hierarchy & project flow</div>
+        <div class="card-url-pill" id="pill-4"></div>
+      </div>
+      <div class="card-action">
+        <a class="open-btn locked" id="btn-4" href="#" target="_blank" rel="noopener" onclick="return handleOpen(event,4)">
+          Open
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+        </a>
+        <button class="copy-btn" id="copy-4" onclick="copyUrl(event,4)">⎘ Copy</button>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Footer -->
+  <div class="footer">
+    <div class="footer-quote">Work smarter. Learn deeper. Build faster.</div>
+    <div class="footer-credit">GITHUB URL TRICKS · mike.devlogs</div>
+  </div>
+
+</div>
+
+<script>
+  // Store generated URLs
+  const generatedUrls = { 1: null, 2: null, 3: null, 4: null };
+
+  function getPath(url) {
+    // Extract everything after github.com
+    const match = url.match(/github\.com(\/.*)/);
+    return match ? match[1] : '';
+  }
+
+  function transformUrl(rawUrl) {
+    const url = rawUrl.trim();
+
+    // Validate: must contain github.com and at minimum owner/repo
+    if (!/https?:\/\/(www\.)?github\.com\/[^\/]+\/[^\/\s]+/.test(url)) {
+      return null;
+    }
+
+    const path = getPath(url);
+
+    return {
+      1: `https://github.dev${path}`,
+      2: `https://gitmcp.io${path}`,
+      3: `https://gitingest.com${path}`,
+      4: `https://gitdiagram.com${path}`,
+    };
+  }
+
+  function activate(urls) {
+    for (let i = 1; i <= 4; i++) {
+      const card = document.getElementById(`card-${i}`);
+      const btn = document.getElementById(`btn-${i}`);
+      const pill = document.getElementById(`pill-${i}`);
+
+      generatedUrls[i] = urls[i];
+
+      // Unlock card
+      card.classList.remove('disabled');
+      card.classList.add('active');
+
+      // Update button
+      btn.href = urls[i];
+      btn.classList.remove('locked');
+
+      // Show URL pill
+      pill.textContent = urls[i];
+      pill.classList.add('visible');
+    }
+  }
+
+  function deactivate() {
+    for (let i = 1; i <= 4; i++) {
+      const card = document.getElementById(`card-${i}`);
+      const btn = document.getElementById(`btn-${i}`);
+      const pill = document.getElementById(`pill-${i}`);
+
+      generatedUrls[i] = null;
+      card.classList.add('disabled');
+      card.classList.remove('active');
+      btn.href = '#';
+      btn.classList.add('locked');
+      pill.textContent = '';
+      pill.classList.remove('visible');
+    }
+  }
+
+  function processInput() {
+    const input = document.getElementById('urlInput');
+    const errorMsg = document.getElementById('errorMsg');
+    const inputHint = document.getElementById('inputHint');
+    const val = input.value.trim();
+
+    errorMsg.classList.remove('show');
+
+    if (!val) {
+      deactivate();
+      inputHint.style.display = 'block';
+      return;
+    }
+
+    const urls = transformUrl(val);
+    if (!urls) {
+      errorMsg.classList.add('show');
+      deactivate();
+      inputHint.style.display = 'none';
+      return;
+    }
+
+    inputHint.style.display = 'none';
+    activate(urls);
+  }
+
+  function clearInput() {
+    document.getElementById('urlInput').value = '';
+    document.getElementById('errorMsg').classList.remove('show');
+    document.getElementById('inputHint').style.display = 'block';
+    deactivate();
+    document.getElementById('urlInput').focus();
+  }
+
+  function openTrick(id) {
+    if (generatedUrls[id]) {
+      window.open(generatedUrls[id], '_blank', 'noopener');
+    }
+  }
+
+  function handleOpen(e, id) {
+    if (!generatedUrls[id]) {
+      e.preventDefault();
+      return false;
+    }
+    e.stopPropagation();
+    return true;
+  }
+
+  async function copyUrl(e, id) {
+    e.stopPropagation();
+    if (!generatedUrls[id]) return;
+    try {
+      await navigator.clipboard.writeText(generatedUrls[id]);
+      const btn = document.getElementById(`copy-${id}`);
+      btn.textContent = '✓ Copied';
+      btn.classList.add('copied');
+      setTimeout(() => {
+        btn.textContent = '⎘ Copy';
+        btn.classList.remove('copied');
+      }, 1800);
+    } catch(err) {}
+  }
+
+  // Live input handling
+  document.getElementById('urlInput').addEventListener('input', processInput);
+
+  // Handle paste
+  document.getElementById('urlInput').addEventListener('paste', () => {
+    setTimeout(processInput, 10);
+  });
+</script>
+</body>
+</html>
