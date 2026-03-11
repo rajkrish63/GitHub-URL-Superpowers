@@ -1,585 +1,162 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>GitHub URL Superpowers</title>
-  <style>
-    :root {
-      --bg: #07090d;
-      --surface: #0d1117;
-      --border: rgba(255,255,255,0.08);
-      --text: #e8eaf0;
-      --muted: rgba(232,234,240,0.55);
-      --green: #3dffa0;
-      --red: #ff6b6b;
-      --yellow: #ffd166;
-      --blue: #74b9ff;
-      --purple: #a29bfe;
-    }
+<title>GitHub URL Superpowers</title>
 
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-    }
+<style>
 
-    body {
-      min-height: 100vh;
-      background: linear-gradient(180deg, #05070a 0%, #0a0f16 100%);
-      color: var(--text);
-      font-family: Arial, sans-serif;
-      overflow-x: hidden;
-    }
+body{
+font-family: Arial, sans-serif;
+background:#0d1117;
+color:white;
+text-align:center;
+margin-top:120px;
+}
 
-    .blob {
-      position: fixed;
-      border-radius: 50%;
-      filter: blur(120px);
-      pointer-events: none;
-      z-index: 0;
-      opacity: 0.35;
-    }
+.container{
+width:520px;
+margin:auto;
+padding:30px;
+background:#161b22;
+border-radius:10px;
+box-shadow:0 0 15px rgba(0,0,0,0.4);
+}
 
-    .blob1 {
-      width: 380px;
-      height: 380px;
-      top: -80px;
-      left: -80px;
-      background: var(--green);
-    }
+h2{
+margin-bottom:5px;
+}
 
-    .blob2 {
-      width: 320px;
-      height: 320px;
-      bottom: -80px;
-      right: -80px;
-      background: var(--blue);
-    }
+.caption{
+color:#8b949e;
+font-size:14px;
+margin-bottom:25px;
+line-height:1.5;
+}
 
-    .blob3 {
-      width: 260px;
-      height: 260px;
-      top: 40%;
-      left: 45%;
-      background: var(--yellow);
-    }
+input{
+width:100%;
+padding:12px;
+border-radius:6px;
+border:1px solid #30363d;
+background:#0d1117;
+color:white;
+margin-bottom:15px;
+}
 
-    .container {
-      position: relative;
-      z-index: 1;
-      width: min(900px, 92%);
-      margin: 0 auto;
-      padding: 48px 0 72px;
-    }
+button{
+padding:10px 20px;
+background:#238636;
+color:white;
+border:none;
+border-radius:6px;
+cursor:pointer;
+}
 
-    .header {
-      text-align: center;
-      margin-bottom: 36px;
-    }
+button:hover{
+background:#2ea043;
+}
 
-    .badge {
-      display: inline-block;
-      font-size: 12px;
-      color: var(--muted);
-      border: 1px solid var(--border);
-      padding: 8px 14px;
-      border-radius: 999px;
-      margin-bottom: 18px;
-      background: rgba(255,255,255,0.03);
-    }
+.links{
+margin-top:25px;
+text-align:left;
+}
 
-    h1 {
-      font-size: clamp(34px, 6vw, 64px);
-      line-height: 1.05;
-      margin-bottom: 14px;
-      font-weight: 800;
-      letter-spacing: -1px;
-    }
+.link-box{
+margin-bottom:18px;
+padding:12px;
+background:#0d1117;
+border-radius:6px;
+border:1px solid #30363d;
+}
 
-    h1 span {
-      color: var(--green);
-    }
+.link-box a{
+color:#58a6ff;
+text-decoration:none;
+font-weight:bold;
+}
 
-    .subtitle {
-      max-width: 620px;
-      margin: 0 auto;
-      color: var(--muted);
-      font-size: 15px;
-      line-height: 1.7;
-    }
+.link-box p{
+margin:5px 0 0 0;
+font-size:13px;
+color:#8b949e;
+}
 
-    .input-box {
-      background: rgba(13,17,23,0.95);
-      border: 1px solid var(--border);
-      border-radius: 18px;
-      padding: 24px;
-      margin-bottom: 28px;
-      box-shadow: 0 10px 30px rgba(0,0,0,0.25);
-    }
-
-    .input-label {
-      display: block;
-      font-size: 12px;
-      margin-bottom: 12px;
-      color: var(--muted);
-      letter-spacing: 0.08em;
-      text-transform: uppercase;
-    }
-
-    .input-row {
-      display: flex;
-      gap: 10px;
-      flex-wrap: wrap;
-    }
-
-    .url-input {
-      flex: 1;
-      min-width: 240px;
-      background: rgba(255,255,255,0.04);
-      border: 1px solid var(--border);
-      color: var(--text);
-      padding: 14px 16px;
-      border-radius: 12px;
-      outline: none;
-      font-size: 14px;
-    }
-
-    .url-input:focus {
-      border-color: rgba(61,255,160,0.45);
-      box-shadow: 0 0 0 3px rgba(61,255,160,0.08);
-    }
-
-    .clear-btn {
-      border: 1px solid var(--border);
-      background: rgba(255,255,255,0.04);
-      color: var(--text);
-      padding: 14px 16px;
-      border-radius: 12px;
-      cursor: pointer;
-      transition: 0.2s ease;
-    }
-
-    .clear-btn:hover {
-      background: rgba(255,107,107,0.1);
-      border-color: rgba(255,107,107,0.3);
-      color: var(--red);
-    }
-
-    .hint {
-      margin-top: 10px;
-      font-size: 13px;
-      color: var(--muted);
-    }
-
-    .hint strong {
-      color: var(--green);
-    }
-
-    .error {
-      margin-top: 12px;
-      display: none;
-      padding: 12px 14px;
-      border-radius: 12px;
-      background: rgba(255,107,107,0.09);
-      border: 1px solid rgba(255,107,107,0.22);
-      color: var(--red);
-      font-size: 13px;
-    }
-
-    .error.show {
-      display: block;
-    }
-
-    .grid {
-      display: grid;
-      gap: 14px;
-    }
-
-    .card {
-      display: grid;
-      grid-template-columns: 58px 1fr auto;
-      gap: 16px;
-      align-items: center;
-      padding: 20px;
-      border-radius: 18px;
-      border: 1px solid var(--border);
-      background: rgba(13,17,23,0.95);
-      transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
-    }
-
-    .card:hover {
-      transform: translateY(-2px);
-    }
-
-    .card.disabled {
-      opacity: 0.45;
-      pointer-events: none;
-    }
-
-    .icon {
-      width: 58px;
-      height: 58px;
-      border-radius: 14px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 24px;
-      border: 1px solid rgba(255,255,255,0.08);
-    }
-
-    .card-1 .icon { background: rgba(61,255,160,0.10); }
-    .card-2 .icon { background: rgba(255,107,107,0.10); }
-    .card-3 .icon { background: rgba(255,209,102,0.10); }
-    .card-4 .icon { background: rgba(116,185,255,0.10); }
-
-    .meta small {
-      display: block;
-      margin-bottom: 6px;
-      color: var(--muted);
-      font-size: 12px;
-      text-transform: uppercase;
-      letter-spacing: 0.08em;
-    }
-
-    .meta h3 {
-      font-size: 18px;
-      margin-bottom: 6px;
-    }
-
-    .meta p {
-      color: var(--muted);
-      font-size: 14px;
-      line-height: 1.6;
-    }
-
-    .generated-url {
-      display: none;
-      margin-top: 10px;
-      padding: 10px 12px;
-      border-radius: 10px;
-      background: rgba(255,255,255,0.03);
-      border: 1px solid rgba(255,255,255,0.06);
-      color: #d9fbe9;
-      font-size: 13px;
-      word-break: break-all;
-    }
-
-    .generated-url.show {
-      display: block;
-    }
-
-    .actions {
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-      align-items: flex-end;
-    }
-
-    .open-btn, .copy-btn {
-      border: none;
-      outline: none;
-      cursor: pointer;
-      text-decoration: none;
-      padding: 10px 14px;
-      border-radius: 10px;
-      font-size: 13px;
-      transition: 0.2s ease;
-      white-space: nowrap;
-    }
-
-    .open-btn {
-      background: rgba(61,255,160,0.12);
-      border: 1px solid rgba(61,255,160,0.28);
-      color: var(--green);
-    }
-
-    .open-btn:hover {
-      background: rgba(61,255,160,0.18);
-    }
-
-    .copy-btn {
-      background: rgba(255,255,255,0.04);
-      border: 1px solid var(--border);
-      color: var(--text);
-    }
-
-    .copy-btn:hover {
-      border-color: rgba(255,255,255,0.22);
-    }
-
-    .footer {
-      margin-top: 36px;
-      text-align: center;
-      color: var(--muted);
-      font-size: 13px;
-    }
-
-    @media (max-width: 720px) {
-      .card {
-        grid-template-columns: 1fr;
-        text-align: left;
-      }
-
-      .actions {
-        align-items: flex-start;
-        flex-direction: row;
-        flex-wrap: wrap;
-      }
-
-      .icon {
-        width: 52px;
-        height: 52px;
-      }
-    }
-  </style>
+</style>
 </head>
+
 <body>
-  <div class="blob blob1"></div>
-  <div class="blob blob2"></div>
-  <div class="blob blob3"></div>
 
-  <div class="container">
-    <div class="header">
-      <div class="badge">GitHub URL Tricks</div>
-      <h1>GitHub URL <span>Superpowers</span></h1>
-      <p class="subtitle">
-        Paste any real GitHub repository URL and instantly transform it into powerful tools like
-        github.dev, gitmcp.io, gitingest.com, and gitdiagram.com.
-      </p>
-    </div>
+<div class="container">
 
-    <div class="input-box">
-      <label class="input-label" for="urlInput">Paste GitHub Repository URL</label>
-      <div class="input-row">
-        <input
-          id="urlInput"
-          class="url-input"
-          type="text"
-          placeholder="https://github.com/owner/repo"
-          autocomplete="off"
-          spellcheck="false"
-        />
-        <button class="clear-btn" onclick="clearInput()">Clear</button>
-      </div>
-      <div class="hint" id="inputHint">
-        Enter the user's <strong>actual GitHub URL</strong> and this tool will change only the domain.
-      </div>
-      <div class="error" id="errorMsg">
-        Please enter a valid GitHub repository URL like:
-        https://github.com/owner/repo
-      </div>
-    </div>
+<h2>GitHub URL Superpowers</h2>
 
-    <div class="grid">
-      <div class="card card-1 disabled" id="card-1" onclick="openTrick(1)">
-        <div class="icon">⌨️</div>
-        <div class="meta">
-          <small>github.dev</small>
-          <h3>VS Code in Browser</h3>
-          <p>Open the repository directly inside the browser editor.</p>
-          <div class="generated-url" id="pill-1"></div>
-        </div>
-        <div class="actions">
-          <a class="open-btn" id="btn-1" href="#" target="_blank" rel="noopener noreferrer" onclick="return handleOpen(event,1)">Open</a>
-          <button class="copy-btn" id="copy-1" onclick="copyUrl(event,1)">Copy</button>
-        </div>
-      </div>
+<div class="caption">
+Paste a GitHub repository URL and instantly generate powerful developer tools 
+that help you explore, analyze, and visualize the repository.
+</div>
 
-      <div class="card card-2 disabled" id="card-2" onclick="openTrick(2)">
-        <div class="icon">🤖</div>
-        <div class="meta">
-          <small>gitmcp.io</small>
-          <h3>AI Repo Understanding</h3>
-          <p>Transform the repo into an AI-friendly exploration link.</p>
-          <div class="generated-url" id="pill-2"></div>
-        </div>
-        <div class="actions">
-          <a class="open-btn" id="btn-2" href="#" target="_blank" rel="noopener noreferrer" onclick="return handleOpen(event,2)">Open</a>
-          <button class="copy-btn" id="copy-2" onclick="copyUrl(event,2)">Copy</button>
-        </div>
-      </div>
+<input
+id="urlInput"
+type="text"
+placeholder="https://github.com/owner/repo"
+/>
 
-      <div class="card card-3 disabled" id="card-3" onclick="openTrick(3)">
-        <div class="icon">📦</div>
-        <div class="meta">
-          <small>gitingest.com</small>
-          <h3>AI Full Context</h3>
-          <p>Convert the repository into structured context for AI tools.</p>
-          <div class="generated-url" id="pill-3"></div>
-        </div>
-        <div class="actions">
-          <a class="open-btn" id="btn-3" href="#" target="_blank" rel="noopener noreferrer" onclick="return handleOpen(event,3)">Open</a>
-          <button class="copy-btn" id="copy-3" onclick="copyUrl(event,3)">Copy</button>
-        </div>
-      </div>
+<button onclick="generate()">Generate Links</button>
 
-      <div class="card card-4 disabled" id="card-4" onclick="openTrick(4)">
-        <div class="icon">🗺️</div>
-        <div class="meta">
-          <small>gitdiagram.com</small>
-          <h3>Architecture Diagram</h3>
-          <p>Generate a visual architecture view of the repository.</p>
-          <div class="generated-url" id="pill-4"></div>
-        </div>
-        <div class="actions">
-          <a class="open-btn" id="btn-4" href="#" target="_blank" rel="noopener noreferrer" onclick="return handleOpen(event,4)">Open</a>
-          <button class="copy-btn" id="copy-4" onclick="copyUrl(event,4)">Copy</button>
-        </div>
-      </div>
-    </div>
+<div id="result" class="links"></div>
 
-    <div class="footer">
-      Built for faster GitHub exploration.
-    </div>
-  </div>
+</div>
 
-  <script>
-    const generatedUrls = { 1: null, 2: null, 3: null, 4: null };
+<script>
 
-    function isValidGitHubUrl(rawUrl) {
-      try {
-        const url = new URL(rawUrl.trim());
-        const host = url.hostname.replace(/^www\./, "");
-        const parts = url.pathname.split("/").filter(Boolean);
-        return host === "github.com" && parts.length >= 2;
-      } catch {
-        return false;
-      }
-    }
+function generate(){
 
-    function transformUrl(rawUrl) {
-      try {
-        const original = new URL(rawUrl.trim());
-        const host = original.hostname.replace(/^www\./, "");
+let url = document.getElementById("urlInput").value;
 
-        if (host !== "github.com") return null;
+if(!url.includes("github.com")){
+alert("Enter valid GitHub URL");
+return;
+}
 
-        const pathParts = original.pathname.split("/").filter(Boolean);
-        if (pathParts.length < 2) return null;
+let path = url.split("github.com")[1];
 
-        const fullPath = original.pathname + original.search + original.hash;
+let links = `
 
-        return {
-          1: `https://github.dev${fullPath}`,
-          2: `https://gitmcp.io${fullPath}`,
-          3: `https://gitingest.com${fullPath}`,
-          4: `https://gitdiagram.com${fullPath}`,
-        };
-      } catch {
-        return null;
-      }
-    }
+<div class="link-box">
+<a href="https://github.dev${path}" target="_blank">
+Open in github.dev
+</a>
+<p>Launch the repository in a browser-based VS Code editor. Browse, search, and edit code without cloning the repository.</p>
+</div>
 
-    function activate(urls) {
-      for (let i = 1; i <= 4; i++) {
-        const card = document.getElementById(`card-${i}`);
-        const btn = document.getElementById(`btn-${i}`);
-        const pill = document.getElementById(`pill-${i}`);
+<div class="link-box">
+<a href="https://gitmcp.io${path}" target="_blank">
+Open in gitmcp.io
+</a>
+<p>Prepare the repository for AI code exploration. Helps AI tools understand the project structure and analyze the codebase.</p>
+</div>
 
-        generatedUrls[i] = urls[i];
-        card.classList.remove("disabled");
-        btn.href = urls[i];
-        pill.textContent = urls[i];
-        pill.classList.add("show");
-      }
-    }
+<div class="link-box">
+<a href="https://gitingest.com${path}" target="_blank">
+Open in gitingest.com
+</a>
+<p>Convert the entire repository into structured context that can be used by AI models for deeper analysis and explanations.</p>
+</div>
 
-    function deactivate() {
-      for (let i = 1; i <= 4; i++) {
-        const card = document.getElementById(`card-${i}`);
-        const btn = document.getElementById(`btn-${i}`);
-        const pill = document.getElementById(`pill-${i}`);
+<div class="link-box">
+<a href="https://gitdiagram.com${path}" target="_blank">
+Open in gitdiagram.com
+</a>
+<p>Automatically generate a visual architecture diagram showing the folder hierarchy and structure of the repository.</p>
+</div>
 
-        generatedUrls[i] = null;
-        card.classList.add("disabled");
-        btn.href = "#";
-        pill.textContent = "";
-        pill.classList.remove("show");
-      }
-    }
+`;
 
-    function processInput() {
-      const input = document.getElementById("urlInput");
-      const errorMsg = document.getElementById("errorMsg");
-      const inputHint = document.getElementById("inputHint");
-      const val = input.value.trim();
+document.getElementById("result").innerHTML = links;
 
-      errorMsg.classList.remove("show");
+}
 
-      if (!val) {
-        deactivate();
-        inputHint.style.display = "block";
-        return;
-      }
+</script>
 
-      if (!isValidGitHubUrl(val)) {
-        deactivate();
-        inputHint.style.display = "none";
-        errorMsg.classList.add("show");
-        return;
-      }
-
-      const urls = transformUrl(val);
-
-      if (!urls) {
-        deactivate();
-        inputHint.style.display = "none";
-        errorMsg.classList.add("show");
-        return;
-      }
-
-      inputHint.style.display = "none";
-      activate(urls);
-    }
-
-    function clearInput() {
-      document.getElementById("urlInput").value = "";
-      document.getElementById("errorMsg").classList.remove("show");
-      document.getElementById("inputHint").style.display = "block";
-      deactivate();
-      document.getElementById("urlInput").focus();
-    }
-
-    function openTrick(id) {
-      if (generatedUrls[id]) {
-        window.open(generatedUrls[id], "_blank", "noopener,noreferrer");
-      }
-    }
-
-    function handleOpen(e, id) {
-      if (!generatedUrls[id]) {
-        e.preventDefault();
-        return false;
-      }
-      e.stopPropagation();
-      return true;
-    }
-
-    async function copyUrl(e, id) {
-      e.stopPropagation();
-      if (!generatedUrls[id]) return;
-
-      try {
-        await navigator.clipboard.writeText(generatedUrls[id]);
-        const btn = document.getElementById(`copy-${id}`);
-        const originalText = btn.textContent;
-        btn.textContent = "Copied";
-        setTimeout(() => {
-          btn.textContent = originalText;
-        }, 1500);
-      } catch (err) {
-        console.error("Copy failed:", err);
-      }
-    }
-
-    document.getElementById("urlInput").addEventListener("input", processInput);
-    document.getElementById("urlInput").addEventListener("paste", () => {
-      setTimeout(processInput, 10);
-    });
-    document.getElementById("urlInput").addEventListener("keydown", (e) => {
-      if (e.key === "Enter") processInput();
-    });
-  </script>
 </body>
-  </html>
+</html>
